@@ -1,77 +1,180 @@
-# VayuReader Project
+# VayuReader
 
-This project is a comprehensive platform for secure PDF management, content discovery, and administration. It consists of a robust backend, web-based admin dashboard, and a mobile application.
-It aims to provide protection from every sort of attack and with scalability there are two branch which we would focus on 
+A document-management platform for organizing, finding, and reading PDFs, with a React Native mobile app, a React admin dashboard, and a Node.js backend.
 
-1. Deployment Branch : Suppose to provide the best facility to make user experience better and and provide ms of latency with high throuput.
-2. Encrypted Branch: Suppose to provide security in a sense it compromises the performance to provide the security assuming constant threats on the application
-   and with it being most valuable information on the site.
+## Features
 
-Q: Why to seperate them?
+- **Document library:** Browse recent and frequently accessed PDFs, filter by category, and search by title.
+- **In-app reading:** Open PDFs within the mobile app, with document watermarking.
+- **Dictionary and acronyms:** Look up definitions and abbreviations, with paginated browsing and debounced search.
+- **Content administration:** Upload and manage PDFs, maintain dictionary entries, and import structured data through the admin dashboard.
+- **Access control:** OTP-based authentication, JWT sessions, role-based permissions, and device identification.
+- **Upload protection:** PDF validation, security scanning, input sanitization, and authenticated document access.
+- **Live updates:** Server-Sent Events notify clients when documents are added, updated, or removed.
+- **Audit trails:** Administrative and user activity logs support operational investigation.
 
-A: With miliseconds of performance with minimilistic resources its practically everything lands to High Network latency and small case systems
-   along with nodejs server which is not that scalable at all. Not when you need protection from MITM and in flight tampering of request.
+## Screenshots
 
-Q: Why to choose nodejs
+Screenshots use sample data. Mobile images are browser-rendered previews of the existing React Native screens; they are not native device captures.
 
-A: No body should in case you plan to server such a large network with few resource its not scalable because of single thread and un typed system, but since the original code was written in nodejs
-   even after considering bad option. The best development speed is always offered by nodejs
+### Mobile app
 
-Q: What branch I should use?
+| Sign-in | Document library |
+| --- | --- |
+| ![Mobile sign-in screen](docs/screenshots/mobile-login.jpg) | ![Mobile PDF library](docs/screenshots/mobile-home.jpg) |
 
-A: Depends on your usecase suggestion for any normal user you can go for deployment branch as this branch will have more updates and optimization to save your deployment cost and memory usage along with cpu
-   utilisation, but for security as a main issue you can go with Encrypted branch.
+| Dictionary | Acronyms |
+| --- | --- |
+| ![Mobile dictionary](docs/screenshots/mobile-dictionary.jpg) | ![Mobile acronyms](docs/screenshots/mobile-abbreviations.jpg) |
 
-Q: Should we use the original code since its a fork?
+### Admin dashboard
 
-A: Yes, Its a fork but of a dead code base with -ve sense architecture with -7 scalability and reliablity as the complete frontend - backend is rewritten, only apk is not modified as its UI is loved by many though I
-   dont like it at all whole design is very poor but thats the only part where only small tweeks were done
+![Document library in the admin dashboard](docs/screenshots/document-library.jpg)
 
-Q: Can you contribute?
+### Admin sign-in
 
-A: Thats why its public but improving backend would be admired , UI have some practical flaw and have lazy implementation if you are intreasted to add u can do that too. like allowing user with no authority in admin-dashboard
-   must be able to see pdfs , Dictionary and Abbreviation. These things are supposed to be public and UI just does not but it does not mean he should'nt see they are suppose to see but due to lazy coding it is as it is so would always
-   appriciate open source contribution.
-   
-Encrypted Branch: What makes it special.
+![Admin sign-in screen](docs/screenshots/admin-login.jpg)
 
-1. E2E encryption: AES-GSM encryption with session based key generation.
-2. E2E signature: Since its not practical to encrypt pdf files as that would cost too much cpu resource making complete application slow, solution is to use a one time signature which can be used so that
-   Replay attack and mid flight File tampering can be defended
-3. Note: Only PDF upload is supported and for some reference the json upload and csv upload are not actually csv and json upload , The input is parsed on the frontend with filters to detect any kind of Injection or scrip itself and converted into     a json payload Not a file then that is converted into string stream and then encrypted with Encryption Key then that was sent and then decrypted at Backend then verify the text does not contain any malicious code then it was saved in mongodb       which already does not support xlxs formula support.
-4. PDF file stream is also parsed to verify that it does not contain any script along with mime type checks and SHA hash verification.
+### Admin dictionary
 
-Deployment Branch: What makes this special
+![Dictionary in the admin dashboard](docs/screenshots/dictionary.jpg)
 
-1. It realy on TLS of https only hence a Defihelman attack is possible and a intermidate proxy can be setup which adding self signed certificates in the client OS certificate collection
-2. What ensures server response to correct users and authority. Does not guarentee the UI tweeks as changing the live variable is always possible using dev tools.
-3. It consider the validity of token upto its expiry so as it aims for longer use of application by customer
-4. It utilises caching very well as since there is no encryption nginx can serve pages cache and cache hit does not need to go cycle of encryption.
-5. It aims to provide speed over all the short commings. Made for mass user base (not admin)
-6. Future Addition , use of OLAP db for analytics like Clickhouse; batching actions; CDN configurations for faster delivery; hot key handle for scale write and read replica; and postgres as main server
 
-How to proceed:
+## Technology stack
 
-check the [book](https://github.com/Nishant040305/vayureader/tree/Encrypted/vayureader/docs/pdf_output)
+| Layer | Technologies |
+| --- | --- |
+| Mobile | React Native, Expo, TypeScript, NativeWind |
+| Admin dashboard | React, JavaScript, Framer Motion |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Caching and rate limiting | Redis |
+| Search | Elasticsearch |
+| Authentication | OTP, JWT, role-based permissions |
+| Deployment | Docker Compose, Nginx |
 
-for short [guide](https://github.com/Nishant040305/vayureader/blob/Encrypted/vayureader/docs/setup.md)
+This README describes the `vayureader1.1.0` branch, which uses MongoDB.
 
-some document updates required to be done as it includes the latest changes and commits and change in the plan a new documentation style would be opted.
+## Architecture
 
-currently the information that the docs is supposed to include can be refered from this README.md file
+```mermaid
+flowchart LR
+    Mobile[React Native app] --> Gateway[Nginx gateway]
+    Admin[React admin dashboard] --> Gateway
+    Gateway --> API[Express API]
+    Gateway --> Web[Admin web server]
+    API --> DB[(MongoDB)]
+    API --> Cache[(Redis)]
+    API --> Search[(Elasticsearch)]
+    API --> Files[PDF storage]
+    API --> SMS[OTP gateway]
+```
 
-you can refer to vayureader/docs/output/book.pdf book contains all the information about the project
+The backend provides authentication, document management, search, and audit APIs. Nginx routes requests to the API and dashboard, while MongoDB stores application records, Redis supports caching and rate limiting, and Elasticsearch serves search workloads.
 
-Current Versions:
-1. Nginx: 1.25-alpine
-2. redis: 7.2-alpine
-3. mongo: 6-jammy
-4. elasticsearch: 8.11.0
-5. node: 20-alpine
-6. react: ^19.0.1
-7. react-native: 0.79.3
-8. expo: ~53.0.10
-   
-rest of library info can be verified from the package.json file of backend and frontend and admin dashboard
+## Getting started
 
-Any issues are very welcome I would love hear(or resolve) about them and that would be a great learning thank you.
+### Prerequisites
+
+- Git and Node.js 20.
+- Docker with Docker Compose for the backend stack.
+- OpenSSL for generating a local development certificate.
+- Android Studio and an emulator/device for Android, or Xcode on macOS for iOS.
+- An SMS gateway, or the bundled SMS simulator for local OTP testing.
+
+### 1. Clone the project
+
+```bash
+git clone --branch vayureader1.1.0 https://github.com/aachintya/vayureader.git
+cd vayureader
+```
+
+### 2. Configure the backend
+
+```bash
+cd vayureader
+cp .env.example .env
+```
+
+Set a unique `JWT_SECRET` of at least 32 characters and configure `OTP_GATEWAY_URL` to an endpoint reachable from the API container. For the services in the included Compose stack, use:
+
+```dotenv
+MONGODB_URI=mongodb://mongo:27017/vayureader
+REDIS_URL=redis://redis:6379
+ELASTICSEARCH_URL=http://elasticsearch:9200
+ALLOWED_ORIGINS=https://localhost
+```
+
+The optional local SMS simulator is available through `npm run sms-simulator` after installing the backend dependencies. It runs separately from the Compose stack; configure the gateway URL according to how the API container reaches your host.
+
+### 3. Start the backend and admin dashboard
+
+Generate a certificate for local development:
+
+```bash
+mkdir -p nginx/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout nginx/certs/server.key \
+  -out nginx/certs/server.crt \
+  -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+```
+
+Then start the services:
+
+```bash
+docker compose up -d --build
+```
+
+The Compose stack starts the API, admin dashboard, MongoDB, Redis, Elasticsearch, and Nginx. Configure your browser or device to trust the local development certificate before using authenticated flows.
+
+- **Admin dashboard:** `https://localhost`
+- **API base:** `https://localhost/api`
+- **Health check:** `https://localhost/health`
+
+Create the initial administrator with your own credentials:
+
+```bash
+docker compose exec app node scripts/seedAdmin.js \
+  "Local Admin" "<ADMIN_PHONE>" "<STRONG_PASSWORD>"
+```
+
+### 4. Run the mobile app
+
+From the repository root:
+
+```bash
+cd VayuReader_Frontend
+npm install
+cp .env.example .env
+```
+
+Set `EXPO_PUBLIC_BACKEND_URL` to a backend address reachable from your emulator or device. A physical device's `localhost` refers to the device itself. Optional service-specific URLs are documented in the [frontend setup guide](VayuReader_Frontend/README.md).
+
+```bash
+npm run android
+# Or, on macOS with Xcode:
+npm run ios
+```
+
+## Project structure
+
+```text
+VayuReader_Frontend/          React Native / Expo app
+vayureader/
+  admin-dashboard/           React administration interface
+  src/                       API routes, controllers, models, and services
+  scripts/                   Seeding, maintenance, and local tooling
+  nginx/                     Gateway and TLS configuration
+  docs/                      Backend and operational documentation
+  docker-compose.yml         Local service orchestration
+```
+
+## Documentation
+
+- [Mobile setup and backend connection](VayuReader_Frontend/README.md)
+- [Backend configuration](vayureader/docs/CONFIGURATION.md)
+- [API endpoints](vayureader/docs/ENDPOINTS.md)
+- [Authentication](vayureader/docs/AUTH.md)
+- [Architecture](vayureader/docs/HLD.md)
+- [Security implementation](vayureader/docs/SECURITY.md)
